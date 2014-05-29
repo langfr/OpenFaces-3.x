@@ -146,8 +146,13 @@ public class TableBody extends TableSection {
         StringWriter stringWriter = new StringWriter();
         List<BodyRow> rows = new ArrayList<BodyRow>();
         ResponseWriter responseWriter = writer.cloneWithWriter(stringWriter);
-        if (AjaxUtil.isAjaxRequest(context))
-            responseWriter.startCDATA();
+        boolean isAjaxRequest = AjaxUtil.isAjaxRequest(context);
+        if (isAjaxRequest)
+            try {
+                responseWriter.startCDATA();
+            } catch ( IllegalStateException e ) {
+                isAjaxRequest = false;
+            }
         stringWriter.getBuffer().setLength(0);
         context.setResponseWriter(responseWriter);
         try {
@@ -156,7 +161,7 @@ public class TableBody extends TableSection {
             else
                 rows = createScrollableRows(context, stringWriter, firstRowIndex, rowCount, columns);
         } finally {
-            if (AjaxUtil.isAjaxRequest(context))
+            if (isAjaxRequest)
                 responseWriter.endCDATA();
             context.setResponseWriter(writer);
         }
